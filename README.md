@@ -1,6 +1,10 @@
 # JiraTagger
 
-A web application to go through a list of issue keys and write information about them to be applied in bulk by other scripting tools.
+An application to go through a list of issue keys and write information about them to be applied in bulk by other scripting tools.
+
+I started out with `tkinter`, gave up and then switched to a browser extension.
+
+Most of this code was written by ChatGPT, I just made it work so that I can go on with my task.
 
 ## Context and Scope
 
