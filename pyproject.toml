@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "jiratagger"
+version = "0.1.0"
+description = "A web application to go through a list of issue keys and write information about them to be applied in bulk"
+authors = ["HackXIt <hackxit@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "jira_tagger" }]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.14"
+
+
+[tool.poetry.group.dev.dependencies]
+pyinstaller = "^6.11.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
