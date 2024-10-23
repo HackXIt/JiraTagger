@@ -7,7 +7,7 @@ from tkinter import messagebox, ttk, filedialog
 import json
 
 class JiraTagger:
-    def __init__(self, issue_keys=None, jira_url=None, resume_file=None):
+    def __init__(self, path=None, issue_keys=None, jira_url=None, resume_file=None):
         self.jira_url = jira_url.rstrip('/') if jira_url else None
         self.results = {}
         self.issues_skipped = []
@@ -18,6 +18,8 @@ class JiraTagger:
             self.load_state(resume_file)
         else:
             self.issue_keys = issue_keys
+            # Statefile either in path or cwd
+            self.state_file = os.path.join(path, 'jira_tagger_state.json') if path else os.path.join(os.path.abspath('.'), 'jira_tagger_state.json')
 
         # Initialize the main Tkinter application
         self.root = tk.Tk()
@@ -166,7 +168,7 @@ class JiraTagger:
             "issues-skipped": self.issues_skipped,
             "issues-done": self.results
         }
-        with open('jira_tagger_state.json', 'w') as file:
+        with open(self.state_file, 'w') as file:
             json.dump(save_data, file, indent=4)
         print("Progress saved.")
 
@@ -205,7 +207,8 @@ def read_issue_keys(file_path):
     try:
         with open(os.path.abspath(file_path), 'r') as file:
             issue_keys = [line.strip() for line in file if line.strip()]
-        return issue_keys
+        path = os.path.dirname(file_path)
+        return issue_keys, path
     except Exception as e:
         print(f"Error reading issue keys file: {e}")
         sys.exit(1)
@@ -216,9 +219,9 @@ def main():
     if args.resume:
         app = JiraTagger(resume_file=args.resume)
     else:
-        issue_keys = read_issue_keys(args.issue_keys_file)
+        issue_keys, path = read_issue_keys(args.issue_keys_file)
         jira_url = args.jira_url
-        app = JiraTagger(issue_keys=issue_keys, jira_url=jira_url)
+        app = JiraTagger(path=path, issue_keys=issue_keys, jira_url=jira_url)
     
     app.start()
 
