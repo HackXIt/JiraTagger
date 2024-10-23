@@ -126,6 +126,7 @@ class JiraTagger:
         }
         self.current_index += 1
         self.window.destroy()
+        self.save_state()  # Always save the state after submitting
         self.process_next_issue()
 
     def on_skip(self, event=None):
@@ -133,6 +134,7 @@ class JiraTagger:
         self.issues_skipped.append(issue_key)
         self.current_index += 1
         self.window.destroy()
+        self.save_state()  # Always save the state after skipping
         self.process_next_issue()
 
     def on_bold_shortcut(self, event):
