@@ -20,11 +20,11 @@ So, in that regard, there are no features beyond that. The tool is very simple a
 
 ## Roadmap
 
-- [ ] Loads a list of Jira issue keys from a text file
-- [ ] Accepts a Jira instance URL to use for browsing the issues
-- [ ] Opens a new tab for each issue key in sequence of the review process (i.e. only one issue key at a time)
-- [ ] Allows the user to write information about the issue (i.e. labels to give, comments to write, etc.)
-- [ ] Allows the user to either submit their information or skip the issue
-- [ ] Saves the information into a dictionary format to be used in further processing (i.e. Jira API calls / bulk update)
-- [ ] Allows the user to export the information to a file
-- [ ] Allows to user to halt the process and resume where they left off at a later time (i.e. save the state to a file and load it back up)
+- [x] Loads a list of Jira issue keys from a text file
+- [x] Accepts a Jira instance URL to use for browsing the issues
+- [x] Opens a new tab for each issue key in sequence of the review process (i.e. only one issue key at a time)
+- [x] Allows the user to write information about the issue (i.e. labels to give, comments to write, etc.)
+- [x] Allows the user to either submit their information or skip the issue
+- [x] Saves the information into a dictionary format to be used in further processing (i.e. Jira API calls / bulk update)
+- [x] Allows the user to export the information to a file
+- [x] Allows to user to halt the process and resume where they left off at a later time (i.e. save the state to a file and load it back up)

@@ -1,19 +1,23 @@
-# jira_tagger/main.py
-
 import sys
 import webbrowser
 import argparse
 import os
 import tkinter as tk
-from tkinter import messagebox, ttk
+from tkinter import messagebox, ttk, filedialog
 import json
 
 class JiraTagger:
-    def __init__(self, issue_keys, jira_url):
-        self.issue_keys = issue_keys
-        self.jira_url = jira_url.rstrip('/')  # Remove trailing slash if any
-        self.current_index = 0
+    def __init__(self, issue_keys=None, jira_url=None, resume_file=None):
+        self.jira_url = jira_url.rstrip('/') if jira_url else None
         self.results = {}
+        self.issues_skipped = []
+        self.current_index = 0
+
+        # If resuming, load saved state
+        if resume_file and os.path.exists(resume_file):
+            self.load_state(resume_file)
+        else:
+            self.issue_keys = issue_keys
 
         # Initialize the main Tkinter application
         self.root = tk.Tk()
@@ -24,17 +28,35 @@ class JiraTagger:
         webbrowser.open(issue_url)
 
     def start(self):
+        if not self.issue_keys or len(self.issue_keys) == 0:
+            print("No issues left to process.")
+            self.root.quit()
+            return
+
+        self.create_menu()
         self.process_next_issue()
         self.root.mainloop()
+
+    def create_menu(self):
+        self.root.deiconify()  # Show the root window for the main UI
+        self.root.title("JiraTagger")
+        # Create a frame for the main menu buttons
+        menu_frame = ttk.Frame(self.root, padding="10")
+        menu_frame.pack(fill='both', expand=True)
+        # Save Progress button
+        save_button = ttk.Button(menu_frame, text="Save Progress", command=self.save_state)
+        save_button.pack(pady=10)
+        # Export Results button
+        export_button = ttk.Button(menu_frame, text="Export Results", command=self.export_results)
+        export_button.pack(pady=10)
+        # Exit button
+        exit_button = ttk.Button(menu_frame, text="Exit", command=self.root.quit)
+        exit_button.pack(pady=10)
 
     def process_next_issue(self):
         if self.current_index >= len(self.issue_keys):
             print("All issues processed.")
-            print("Results:")
-            print(json.dumps(self.results, indent=4))
-            # Optionally, save results to a file
-            with open('results.json', 'w') as outfile:
-                json.dump(self.results, outfile, indent=4)
+            self.export_results()
             self.root.quit()
             return
 
@@ -44,6 +66,7 @@ class JiraTagger:
         # Create the input window
         self.window = tk.Toplevel(self.root)
         self.window.title(f"Issue: {issue_key}")
+        self.window.wm_attributes("-topmost", True)  # Keep window on top
         self.window.protocol("WM_DELETE_WINDOW", self.on_skip)
 
         # Tags input
@@ -106,6 +129,8 @@ class JiraTagger:
         self.process_next_issue()
 
     def on_skip(self, event=None):
+        issue_key = self.issue_keys[self.current_index]
+        self.issues_skipped.append(issue_key)
         self.current_index += 1
         self.window.destroy()
         self.process_next_issue()
@@ -132,11 +157,46 @@ class JiraTagger:
             self.comment_input.mark_set(tk.INSERT, new_index)
         self.comment_input.focus_set()
 
+    def save_state(self):
+        """Saves the current state (index and results) to a file."""
+        save_data = {
+            "issues-left": self.issue_keys[self.current_index:],
+            "issues-skipped": self.issues_skipped,
+            "issues-done": self.results
+        }
+        with open('jira_tagger_state.json', 'w') as file:
+            json.dump(save_data, file, indent=4)
+        print("Progress saved.")
+
+    def load_state(self, resume_file):
+        """Loads the saved state from a file."""
+        with open(resume_file, 'r') as file:
+            saved_data = json.load(file)
+            self.issue_keys = saved_data.get("issues-left", [])
+            self.issues_skipped = saved_data.get("issues-skipped", [])
+            self.results = saved_data.get("issues-done", {})
+            self.current_index = 0 if len(self.issue_keys) == 0 else 0
+
+    def export_results(self):
+        """Exports the results to a file chosen by the user."""
+        file_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+        if file_path:
+            with open(file_path, 'w') as file:
+                json.dump(self.results, file, indent=4)
+            print(f"Results exported to {file_path}")
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description='JiraTagger - Label Jira issues with tags and comments.')
-    parser.add_argument('issue_keys_file', help='Path to the file containing Jira issue keys.')
-    parser.add_argument('jira_url', help='Base URL of the Jira instance.')
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('issue_keys_file', nargs='?', help='Path to the file containing Jira issue keys.')
+    group.add_argument('--resume', help='Resume from a saved state file.')
+    parser.add_argument('jira_url', nargs='?', help='Base URL of the Jira instance.')
     args = parser.parse_args()
+
+    # Ensure jira_url is provided when not resuming
+    if not args.resume and not args.jira_url:
+        parser.error("jira_url is required when issue_keys_file is provided.")
+    
     return args
 
 def read_issue_keys(file_path):
@@ -148,9 +208,17 @@ def read_issue_keys(file_path):
         print(f"Error reading issue keys file: {e}")
         sys.exit(1)
 
-if __name__ == '__main__':
+def main():
     args = parse_arguments()
-    issue_keys = read_issue_keys(args.issue_keys_file)
-    jira_url = args.jira_url
-    app = JiraTagger(issue_keys, jira_url)
+
+    if args.resume:
+        app = JiraTagger(resume_file=args.resume)
+    else:
+        issue_keys = read_issue_keys(args.issue_keys_file)
+        jira_url = args.jira_url
+        app = JiraTagger(issue_keys=issue_keys, jira_url=jira_url)
+    
     app.start()
+
+if __name__ == '__main__':
+    main()
