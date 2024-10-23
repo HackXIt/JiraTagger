@@ -84,7 +84,7 @@ class JiraTagger:
 
         self.window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
 
-        # Rest of your window creation code...
+        # Tags input
         tags_label = ttk.Label(self.window, text="Tags:")
         tags_label.pack(anchor='w', padx=10, pady=(10, 0))
 
@@ -97,12 +97,26 @@ class JiraTagger:
         self.tags_list = tk.Listbox(self.window)
         self.tags_list.pack(fill='both', padx=10, pady=5)
 
+        # Comment input
         comment_label = ttk.Label(self.window, text="Comment:")
         comment_label.pack(anchor='w', padx=10, pady=(10, 0))
 
         self.comment_input = tk.Text(self.window, height=10)
         self.comment_input.pack(fill='both', padx=10, pady=5)
 
+        # Shortcut help text
+        help_text = (
+            "Shortcuts:\n"
+            "Ctrl+B: Bold\n"
+            "Ctrl+I: Italic\n"
+            "Ctrl+U: Underline\n"
+            "Ctrl+Shift+C: Insert color\n"
+            "Ctrl+L: Insert link"
+        )
+        help_label = ttk.Label(self.window, text=help_text, justify='left', foreground='gray')
+        help_label.pack(anchor='w', padx=10, pady=(5, 10))
+
+        # Buttons
         buttons_frame = ttk.Frame(self.window)
         buttons_frame.pack(pady=10)
 
@@ -115,6 +129,9 @@ class JiraTagger:
         # Keyboard shortcuts
         self.comment_input.bind('<Control-b>', self.on_bold_shortcut)
         self.comment_input.bind('<Control-i>', self.on_italic_shortcut)
+        self.comment_input.bind('<Control-u>', self.on_underline_shortcut)
+        self.comment_input.bind('<Control-Shift-c>', self.on_color_shortcut)
+        self.comment_input.bind('<Control-l>', self.on_link_shortcut)
 
         # Focus on tags input
         self.tags_input.focus_set()
@@ -166,6 +183,10 @@ class JiraTagger:
         self.open_color_picker()
         return 'break'
 
+    def on_link_shortcut(self, event):
+        self.open_link_popup()
+        return 'break'
+
     def open_color_picker(self):
         # Create a popup window for color selection
         color_popup = tk.Toplevel(self.window)
@@ -205,10 +226,6 @@ class JiraTagger:
 
         color_wheel_button = ttk.Button(color_popup, text="Open Color Wheel", command=open_color_wheel)
         color_wheel_button.pack(fill='x', padx=10, pady=5)
-    
-    def on_link_shortcut(self, event):
-        self.open_link_popup()
-        return 'break'
 
     def open_link_popup(self):
         # Create a popup window to input the URL
