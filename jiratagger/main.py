@@ -4,6 +4,7 @@ import argparse
 import os
 import tkinter as tk
 from tkinter import messagebox, ttk, filedialog
+import tkinter.colorchooser as colorchooser
 import json
 
 class JiraTagger:
@@ -104,6 +105,9 @@ class JiraTagger:
         # Keyboard shortcuts
         self.comment_input.bind('<Control-b>', self.on_bold_shortcut)
         self.comment_input.bind('<Control-i>', self.on_italic_shortcut)
+        self.comment_input.bind('<Control-u>', self.on_underline_shortcut)
+        self.comment_input.bind('<Control-k>', self.on_link_shortcut)
+        self.comment_input.bind('<Control-c>', self.on_color_shortcut)
 
         # Focus on tags input
         self.tags_input.focus_set()
@@ -146,6 +150,85 @@ class JiraTagger:
     def on_italic_shortcut(self, event):
         self.insert_markdown('_', '_')
         return 'break'  # Prevent default behavior
+    
+    def on_underline_shortcut(self, event):
+        self.insert_markdown('+', '+')
+        return 'break'  # Prevent default behavior
+    
+    def on_color_shortcut(self, event):
+    self.open_color_picker()
+    return 'break'
+
+    def open_color_picker(self):
+        # Create a popup window for color selection
+        color_popup = tk.Toplevel(self.window)
+        color_popup.title("Select Color")
+
+        # Pre-set color options
+        preset_colors = {
+            "#172B4D": "black",
+            "#4C9AFF": "light-blue",
+            "#FF8B00": "dark-orange",
+            "#505F79": "dark-grey",
+            "#00875A": "green",
+            "#FFAB00": "light-orange",
+            "#C1C7D0": "light-grey",
+            "#57D9A3": "pale-green",
+            "#403294": "purple",
+            "#0747A6": "blue",
+            "#DE350B": "red",
+            "#FFBDAD": "peach"
+        }
+
+        # Function to insert the selected color
+        def insert_color(hex_code):
+            self.insert_markdown(f'{{color:{hex_code}}}', '{color}')
+            color_popup.destroy()
+
+        # Add preset color buttons
+        for hex_code, color_name in preset_colors.items():
+            button = ttk.Button(color_popup, text=color_name, command=lambda hc=hex_code: insert_color(hc))
+            button.pack(fill='x', padx=10, pady=5)
+
+        # Add a color wheel chooser button
+        def open_color_wheel():
+            color_code = colorchooser.askcolor()[1]  # Get color hex value
+            if color_code:
+                insert_color(color_code)
+
+        color_wheel_button = ttk.Button(color_popup, text="Open Color Wheel", command=open_color_wheel)
+        color_wheel_button.pack(fill='x', padx=10, pady=5)
+    
+    def on_link_shortcut(self, event):
+    self.open_link_popup()
+    return 'break'
+
+    def open_link_popup(self):
+        # Create a popup window to input the URL
+        link_popup = tk.Toplevel(self.window)
+        link_popup.title("Enter URL")
+
+        # Label and text entry for the URL
+        label = ttk.Label(link_popup, text="Enter URL:")
+        label.pack(pady=5)
+
+        url_var = tk.StringVar()
+        url_entry = ttk.Entry(link_popup, textvariable=url_var)
+        url_entry.pack(fill='x', padx=10, pady=5)
+
+        # Function to insert the link
+        def insert_link():
+            url = url_var.get().strip()
+            if url:
+                self.insert_markdown('[', f'|{url}]')
+                link_popup.destroy()
+
+        # Add a button to submit the URL
+        submit_button = ttk.Button(link_popup, text="Insert Link", command=insert_link)
+        submit_button.pack(pady=10)
+
+        # Focus on the URL entry box
+        url_entry.focus_set()
 
     def insert_markdown(self, before, after):
         try:
