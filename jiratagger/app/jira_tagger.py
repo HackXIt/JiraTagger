@@ -39,7 +39,17 @@ class JiraTagger:
             self.root.quit()
             return
         self.open_issue_in_browser(issue_key)
+
+        # Create the issue window and display it
         self.issue_window = IssueWindowComponent(self.root, self, issue_key, self.window_x_pos, self.window_y_pos)
         self.issue_window.show()
         self.root.update_idletasks()
+
+        # Get the position of the issue window and set the main window position below it
         self.window_x_pos, self.window_y_pos = self.issue_window.winfo_rootx(), self.issue_window.winfo_rooty()
+        main_window_x = self.window_x_pos
+        main_window_y = self.window_y_pos + self.issue_window.winfo_height() + 10  # 10px gap below issue window
+
+        # Update the main window geometry to place it below the issue window
+        self.root.geometry(f"+{main_window_x}+{main_window_y}")
+        self.root.deiconify()  # Show the main window if it was hidden

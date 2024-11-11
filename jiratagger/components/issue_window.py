@@ -22,10 +22,10 @@ class IssueWindowComponent(tk.Toplevel):
         self.title(f"Issue: {issue_key}")
         self.wm_attributes("-topmost", True)
         self.protocol("WM_DELETE_WINDOW", self.on_skip)
-        self.window_width = 400
+        self.window_width = 600
         self.window_height = 800
         
-        self.tags_input = AutocompleteEntryListbox(master=self, completevalues=list(self.app.state_manager.tag_hints))
+        self.tags_input = AutocompleteEntryListbox(master=self, completevalues=list(self.app.state_manager.tag_hints), allow_other_values=True)
         self.comment_input = tk.Text(self, height=10)
 
         # Position the window based on browser location
@@ -75,8 +75,8 @@ class IssueWindowComponent(tk.Toplevel):
         ttk.Button(buttons_frame, text="Skip", command=self.on_skip).pack(side='left', padx=5)
 
     def _bind_shortcuts(self):
-        self.tags_input.bind("<Return>", self.on_add_tag)
-        self.tags_input.bind('<KeyRelease>', self.on_tag_key_release)
+        self.tags_input.entry.bind("<Return>", self.on_add_tag)
+        self.tags_input.entry.bind('<KeyRelease>', self.on_tag_key_release)
         self.comment_input.bind('<Control-b>', self.on_bold_shortcut)
         self.comment_input.bind('<Control-i>', self.on_italic_shortcut)
         self.comment_input.bind('<Control-u>', self.on_underline_shortcut)
@@ -101,6 +101,7 @@ class IssueWindowComponent(tk.Toplevel):
         typed_text = self.tags_input.entry.get().strip()
         if ',' in typed_text: # Add tag when user types a comma
             self.on_add_tag()
+            self.tags_input.entry.delete(0, tk.END)
 
     def on_submit(self):
         tags = self.tags_list.get(0, tk.END)

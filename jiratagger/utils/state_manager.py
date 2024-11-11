@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 class StateManager:
     state_jira_url = "jira-url"
@@ -19,6 +20,8 @@ class StateManager:
             self.load_state()
 
     def save_state(self):
+        # Print timestamp and sanity message to console
+        print(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Saving state to {self.state_file}")
         data = {
             self.state_jira_url: self.jira_url,
             self.state_issue_keys: self.issue_keys[self.current_index:],
@@ -52,6 +55,7 @@ class StateManager:
     def add_result(self, issue_key, tags, comment):
         self.results[issue_key] = {"tags": list(tags), "comment": comment}
         self.tag_hints.update(tags)
+        self.save_state()
 
     def skip_issue(self, issue_key):
         self.issues_skipped.append(issue_key)
