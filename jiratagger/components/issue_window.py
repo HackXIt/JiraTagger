@@ -80,7 +80,7 @@ class IssueWindowComponent(tk.Toplevel):
         self.comment_input.bind('<Control-b>', self.on_bold_shortcut)
         self.comment_input.bind('<Control-i>', self.on_italic_shortcut)
         self.comment_input.bind('<Control-u>', self.on_underline_shortcut)
-        self.comment_input.bind('<Control-Shift-c>', self.on_color_shortcut)
+        self.comment_input.bind('<Control-Shift-C>', self.on_color_shortcut)
         self.comment_input.bind('<Control-l>', self.on_link_shortcut)
         self.tags_list.bind("<Delete>", self.on_delete_tag)
     
@@ -115,15 +115,15 @@ class IssueWindowComponent(tk.Toplevel):
         self.app.process_next_issue()
 
     def on_bold_shortcut(self, event):
-        self.insert_markdown('**', '**')
+        MarkdownUtils.insert_markdown('**', '**', self.comment_input)
         return 'break'  # Prevent default behavior
 
     def on_italic_shortcut(self, event):
-        self.insert_markdown('_', '_')
+        MarkdownUtils.insert_markdown('_', '_', self.comment_input)
         return 'break'  # Prevent default behavior
     
     def on_underline_shortcut(self, event):
-        self.insert_markdown('+', '+')
+        MarkdownUtils.insert_markdown('+', '+', self.comment_input)
         return 'break'  # Prevent default behavior
     
     def on_color_shortcut(self, event):
