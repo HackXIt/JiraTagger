@@ -1,8 +1,8 @@
 import webbrowser
 import tkinter as tk
-from components.menu import MenuComponent
-from components.issue_window import IssueWindowComponent
-from utils.state_manager import StateManager
+from jiratagger.components.menu import MenuComponent
+from jiratagger.components.issue_window import IssueWindowComponent
+from jiratagger.utils.state_manager import StateManager
 
 class JiraTagger:
     def __init__(self, path=None, issue_keys=None, jira_url=None, resume_file=None):
@@ -12,7 +12,7 @@ class JiraTagger:
         self.issue_window = None
         self.root = tk.Tk()
         self.root.title("JiraTagger")
-        self.root.geometry("250x150")
+        self.root.geometry("300x150")
         self.root.withdraw()
         self.window_x_pos = None
         self.window_y_pos = None
@@ -32,6 +32,7 @@ class JiraTagger:
         self.root.mainloop()
     
     def process_next_issue(self):
+        self.menu.update_labels()
         issue_key = self.state_manager.get_next_issue()
         if not issue_key:
             self.state_manager.export_results()

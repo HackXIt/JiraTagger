@@ -1,4 +1,4 @@
-from jira_tagger import JiraTagger
+from jiratagger.app.jira_tagger import JiraTagger
 import argparse
 import sys
 import os

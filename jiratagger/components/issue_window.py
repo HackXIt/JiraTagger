@@ -1,10 +1,10 @@
 import tkinter as tk
 from tkinter import ttk
-from components.color_picker import ColorPickerComponent
-from components.link_popup import LinkPopupComponent
+from jiratagger.components.color_picker import ColorPickerComponent
+from jiratagger.components.link_popup import LinkPopupComponent
 from ttkwidgets.autocomplete import AutocompleteEntryListbox
-from utils.markdown_utils import MarkdownUtils
-from utils.browser_utils import BrowserUtils
+from jiratagger.utils.markdown_utils import MarkdownUtils
+from jiratagger.utils.browser_utils import BrowserUtils
 
 class IssueWindowComponent(tk.Toplevel):
     help_text = (
@@ -29,23 +29,32 @@ class IssueWindowComponent(tk.Toplevel):
         self.comment_input = tk.Text(self, height=10)
 
         # Position the window based on browser location
-        self._set_window_position()
+        self._set_window_position(winfo_rootx, winfo_rooty)
         self._setup_ui()
         self._bind_shortcuts()
 
     def _set_window_position(self, winfo_rootx=None, winfo_rooty=None):
+        """
+        Sets the window position on the far right of the screen where the browser is located.
+
+        If a winfo_rootx and winfo_rooty are provided, the window will be positioned at those coordinates. (Saved position of last issue window)
+        """
         if winfo_rootx and winfo_rooty:
             self.geometry(f"{self.window_width}x{self.window_height}+{winfo_rootx}+{winfo_rooty}")
             self.update_idletasks()
             return
-        """Sets the window position near the browser if detected."""
         browser_screen = BrowserUtils.get_browser_screen()
+        
         if browser_screen:
             x_position = browser_screen.x + browser_screen.width - self.window_width - 10
             y_position = browser_screen.y + 150
+            print(f"Positioning on browser screen at: ({x_position}, {y_position})")
         else:
-            x_position, y_position = 100, 100  # Default position
+            # Default position if no browser screen is detected
+            x_position, y_position = 100, 100
+            print("Browser screen not found. Using default position.")
 
+        # Apply the calculated position
         self.geometry(f"{self.window_width}x{self.window_height}+{x_position}+{y_position}")
         self.update_idletasks()
 

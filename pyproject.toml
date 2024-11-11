@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "A web application to go through a list of issue keys and write information about them to be applied in bulk"
 authors = ["HackXIt <hackxit@gmail.com>"]
 readme = "README.md"
-packages = [{ include = "jiratagger" }]
+packages = [
+    { include = "jiratagger" }
+]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.14"

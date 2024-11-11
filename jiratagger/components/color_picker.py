@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import tkinter.colorchooser as colorchooser
-from utils.markdown_utils import MarkdownUtils
+from jiratagger.utils.markdown_utils import MarkdownUtils
 
 class ColorPickerComponent(tk.Toplevel):
     # Pre-set color options (colors from Jira comment field presets)
@@ -27,10 +27,10 @@ class ColorPickerComponent(tk.Toplevel):
         self.protocol("WM_DELETE_WINDOW", self.destroy)
         # Add preset color buttons
         for hex_code, color_name in self.preset_colors.items():
-            self.button = ttk.Button(self, text=color_name, command=lambda hc=hex_code: self.insert_color(hc))
-            self.button.pack(fill='x', padx=10, pady=5)
-        self.color_wheel_button = ttk.Button(self, text="Open Color Wheel", command=self.open_color_picker)
-        self.color_wheel_button.pack(fill='x', padx=10, pady=5)
+            button = ttk.Button(self, text=color_name, command=lambda hc=hex_code: self.insert_color(hc))
+            button.pack(fill='x', padx=10, pady=5)
+        color_wheel_button = ttk.Button(self, text="Open Color Wheel", command=self.open_color_picker)
+        color_wheel_button.pack(fill='x', padx=10, pady=5)
     
     # Function to insert the selected color
     def insert_color(self, hex_code):
@@ -40,4 +40,5 @@ class ColorPickerComponent(tk.Toplevel):
     def open_color_picker(self):
         color_code = colorchooser.askcolor()[1]
         if color_code:
-            self.comment_input.insert(tk.INSERT, f"{{color:{color_code}}}")
+            MarkdownUtils.insert_markdown(tk.INSERT, f"{{color:{color_code}}}", self.comment_input)
+            self.destroy()

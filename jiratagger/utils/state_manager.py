@@ -55,3 +55,12 @@ class StateManager:
 
     def skip_issue(self, issue_key):
         self.issues_skipped.append(issue_key)
+
+    def get_remaining_issues_count(self):
+        return len(self.issue_keys) - self.current_index
+    
+    def get_done_issues_count(self):
+        return len(self.results)
+    
+    def get_skipped_issues_count(self):
+        return len(self.issues_skipped)
