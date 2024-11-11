@@ -4,6 +4,9 @@ import argparse
 import os
 import tkinter as tk
 from tkinter import messagebox, ttk, filedialog
+from ttkwidgets.autocomplete import AutocompleteEntryListbox
+import win32gui
+from screeninfo import get_monitors
 import tkinter.colorchooser as colorchooser
 import json
 
@@ -13,10 +16,12 @@ class JiraTagger:
         self.results = {}
         self.issues_skipped = []
         self.current_index = 0
+        self.tag_hints = set() # Stores unique tags as hints
 
         # If resuming, load saved state
         if resume_file and os.path.exists(resume_file):
             self.load_state(resume_file)
+            self.state_file = resume_file
         else:
             self.issue_keys = issue_keys
             # Statefile either in path or cwd
@@ -43,6 +48,7 @@ class JiraTagger:
     def create_menu(self):
         self.root.deiconify()  # Show the root window for the main UI
         self.root.title("JiraTagger")
+        self.root.wm_attributes("-topmost", True)  # Keep window on top
         # Create a frame for the main menu buttons
         menu_frame = ttk.Frame(self.root, padding="10")
         menu_frame.pack(fill='both', expand=True)
@@ -72,30 +78,43 @@ class JiraTagger:
         self.window.wm_attributes("-topmost", True)  # Keep window on top
         self.window.protocol("WM_DELETE_WINDOW", self.on_skip)
 
-        # Position window on the right side of the screen
-        screen_width = self.window.winfo_screenwidth()
-        screen_height = self.window.winfo_screenheight()
-        window_width = 400  # Set window width
-        window_height = 600  # Set window height
+        # Set window width and height
+        window_width = 400
+        window_height = 800
 
-        # Calculate position to move window to the right side
-        x_position = screen_width - window_width - 10  # 10px from the right edge
-        y_position = 50  # Position from top (you can adjust this as needed)
+        # Determine window position only on the first run
+        if not hasattr(self, 'window_x_position') or not hasattr(self, 'window_y_position'):
+            # Determine the screen where the browser is located
+            browser_screen = self.get_browser_screen()
 
-        self.window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+            if browser_screen:
+                self.window_x_position = browser_screen.x + browser_screen.width - window_width - 10
+                self.window_y_position = browser_screen.y + 150
+            else:
+                self.window_x_position = 100
+                self.window_y_position = 100
+
+        # Apply the absolute position explicitly each time
+        self.window.geometry(f"{window_width}x{window_height}+{self.window_x_position}+{self.window_y_position}")
+
+        # Update position attributes based on absolute position after setting geometry (only on the first window)
+        if not hasattr(self, 'window_x_position') or not hasattr(self, 'window_y_position'):
+            self.window.update_idletasks()  # Ensure geometry is applied
+            self.window_x_position = self.window.winfo_rootx()
+            self.window_y_position = self.window.winfo_rooty()
 
         # Tags input
         tags_label = ttk.Label(self.window, text="Tags:")
         tags_label.pack(anchor='w', padx=10, pady=(10, 0))
 
-        self.tags_var = tk.StringVar()
-        self.tags_input = ttk.Entry(self.window, textvariable=self.tags_var)
+        self.tags_input = AutocompleteEntryListbox(master=self.window, allow_other_values=True, completevalues=list(self.tag_hints))
         self.tags_input.pack(fill='x', padx=10)
-        self.tags_input.bind('<Return>', self.on_add_tag)
-        self.tags_input.bind('<KeyRelease>', self.on_tag_key_release)
+        self.tags_input.entry.bind('<Return>', self.on_add_tag)
+        self.tags_input.entry.bind('<KeyRelease>', self.on_tag_key_release)
 
         self.tags_list = tk.Listbox(self.window)
         self.tags_list.pack(fill='both', padx=10, pady=5)
+        self.tags_list.bind('<Delete>', self.on_delete_tag)
 
         # Comment input
         comment_label = ttk.Label(self.window, text="Comment:")
@@ -137,13 +156,22 @@ class JiraTagger:
         self.tags_input.focus_set()
 
     def on_add_tag(self, event=None):
-        tag = self.tags_var.get().strip().strip(',')
+        tag = self.tags_input.get().strip().strip(',')
         if tag and tag not in self.tags_list.get(0, tk.END):
             self.tags_list.insert(tk.END, tag)
-            self.tags_var.set('')
+            self.tag_hints.add(tag)
+    
+    def on_delete_tag(self, event=None):
+        """Deletes the selected tag from the tags list and tag hints."""
+        selected_index = self.tags_list.curselection()
+        if selected_index:
+            tag = self.tags_list.get(selected_index)
+            self.tags_list.delete(selected_index)
 
     def on_tag_key_release(self, event):
-        if ',' in self.tags_var.get():
+        """Updates the auto-complete suggestion dynamically as the user types."""
+        typed_text = self.tags_input.get().strip()
+        if ',' in typed_text: # Add tag when user types a comma
             self.on_add_tag()
 
     def on_submit(self):
@@ -268,12 +296,40 @@ class JiraTagger:
             self.comment_input.mark_set(tk.INSERT, new_index)
         self.comment_input.focus_set()
 
+    def get_browser_screen(self):
+        """Find the screen where the browser is located."""
+        def callback(hwnd, extra):
+            class_name = win32gui.GetClassName(hwnd)
+            if class_name in ["Chrome_WidgetWin_1", "MozillaWindowClass"]:
+                rect = win32gui.GetWindowRect(hwnd)
+                extra.append((hwnd, rect))
+
+        browser_windows = []
+        win32gui.EnumWindows(callback, browser_windows)
+
+        if not browser_windows:
+            print("Browser window not found. Defaulting to primary screen.")
+            return None
+
+        # Use the first matched browser window
+        _, (left, top, right, bottom) = browser_windows[0]
+        browser_x, browser_y = left, top
+
+        # Determine which screen contains the browser window
+        for monitor in get_monitors():
+            if (monitor.x <= browser_x < monitor.x + monitor.width and
+                    monitor.y <= browser_y < monitor.y + monitor.height):
+                return monitor
+        return None  # Fallback if no matching screen is found
+
     def save_state(self):
         """Saves the current state (index and results) to a file."""
         save_data = {
+            "jira-url": self.jira_url,
             "issues-left": self.issue_keys[self.current_index:],
             "issues-skipped": self.issues_skipped,
-            "issues-done": self.results
+            "issues-done": self.results,
+            "tag-hints": list(self.tag_hints)
         }
         with open(self.state_file, 'w') as file:
             json.dump(save_data, file, indent=4)
@@ -283,9 +339,14 @@ class JiraTagger:
         """Loads the saved state from a file."""
         with open(resume_file, 'r') as file:
             saved_data = json.load(file)
+            self.jira_url = saved_data.get("jira-url", None)
+            if not self.jira_url:
+                # Open the file dialog to select the Jira URL
+                self.jira_url = filedialog.askstring("Jira URL", "Enter the base URL of the Jira instance:")
             self.issue_keys = saved_data.get("issues-left", [])
             self.issues_skipped = saved_data.get("issues-skipped", [])
             self.results = saved_data.get("issues-done", {})
+            self.tag_hints.update(saved_data.get("tag-hints", []))
             self.current_index = 0 if len(self.issue_keys) == 0 else 0
 
     def export_results(self):
