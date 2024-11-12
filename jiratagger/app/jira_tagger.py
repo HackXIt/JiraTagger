@@ -14,6 +14,9 @@ class JiraTagger:
         self.root.title("JiraTagger")
         self.root.geometry("300x150")
         self.root.withdraw()
+        
+        # Position variables
+        self.initial_position_set = False
         self.window_x_pos = None
         self.window_y_pos = None
     
@@ -41,12 +44,21 @@ class JiraTagger:
         self.open_issue_in_browser(issue_key)
 
         # Create the issue window and display it
-        self.issue_window = IssueWindowComponent(self.root, self, issue_key, self.window_x_pos, self.window_y_pos)
+        self.issue_window = IssueWindowComponent(self.root, self, issue_key)
         self.issue_window.show()
         self.root.update_idletasks()
 
-        # Get the position of the issue window and set the main window position below it
-        self.window_x_pos, self.window_y_pos = self.issue_window.winfo_rootx(), self.issue_window.winfo_rooty()
+        # Set initial position if it hasn't been set yet
+        if not self.initial_position_set:
+            # Get the initial position of the issue window
+            self.window_x_pos = self.issue_window.winfo_rootx()
+            self.window_y_pos = self.issue_window.winfo_rooty()
+            self.initial_position_set = True
+
+        # Set the position of the issue window
+        self.issue_window.geometry(f"+{self.window_x_pos}+{self.window_y_pos}")
+
+        # Calculate the main window position directly below the issue window
         main_window_x = self.window_x_pos
         main_window_y = self.window_y_pos + self.issue_window.winfo_height() + 10  # 10px gap below issue window
 

@@ -47,7 +47,7 @@ class IssueWindowComponent(tk.Toplevel):
         
         if browser_screen:
             x_position = browser_screen.x + browser_screen.width - self.window_width - 10
-            y_position = browser_screen.y + 150
+            y_position = browser_screen.y + 130
             print(f"Positioning on browser screen at: ({x_position}, {y_position})")
         else:
             # Default position if no browser screen is detected

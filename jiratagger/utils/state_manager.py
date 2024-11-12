@@ -22,9 +22,11 @@ class StateManager:
     def save_state(self):
         # Print timestamp and sanity message to console
         print(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Saving state to {self.state_file}")
+        # Do not remove issues that are currently processed on manual save
+        adjusted_index = self.current_index - 1 if self.issue_keys[self.current_index] not in self.results.keys() else self.current_index
         data = {
             self.state_jira_url: self.jira_url,
-            self.state_issue_keys: self.issue_keys[self.current_index:],
+            self.state_issue_keys: self.issue_keys[adjusted_index:],
             self.state_results: self.results,
             self.state_issues_skipped: self.issues_skipped,
             self.state_tag_hints: list(self.tag_hints)
