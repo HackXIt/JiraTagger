@@ -1,5 +1,6 @@
 import webbrowser
 import tkinter as tk
+import time
 from jiratagger.components.menu import MenuComponent
 from jiratagger.components.issue_window import IssueWindowComponent
 from jiratagger.utils.state_manager import StateManager
@@ -19,6 +20,10 @@ class JiraTagger:
         self.initial_position_set = False
         self.window_x_pos = None
         self.window_y_pos = None
+
+        # Timing data for current session
+        self.issue_start_time = None
+        self.issue_durations = []  # List to store time taken for each processed issue
     
     def open_issue_in_browser(self, issue_key):
         issue_url = f"{self.state_manager.jira_url}/browse/{issue_key}"
@@ -42,6 +47,7 @@ class JiraTagger:
             self.root.quit()
             return
         self.open_issue_in_browser(issue_key)
+        self.issue_start_time = time.time()  # Timestamp for when the issue processing
 
         # Create the issue window and display it
         self.issue_window = IssueWindowComponent(self.root, self, issue_key)
@@ -65,3 +71,16 @@ class JiraTagger:
         # Update the main window geometry to place it below the issue window
         self.root.geometry(f"+{main_window_x}+{main_window_y}")
         self.root.deiconify()  # Show the main window if it was hidden
+    
+    def submit_issue(self, issue_key, tags, comment):
+        # Called when an issue is submitted
+        if self.issue_start_time is not None:
+            duration = time.time() - self.issue_start_time  # Calculate time taken for this issue
+            self.issue_durations.append(duration)  # Store the duration for calculating the average
+            self.issue_start_time = None  # Reset start time for the next issue
+        self.state_manager.add_result(issue_key, tags, comment)
+        self.menu.calculate_remaining_time(self.state_manager.get_remaining_issues_count(), self.issue_durations)
+    
+    def skip_issue(self, issue_key):
+        self.issue_start_time = None  # Reset start time for the next issue
+        self.state_manager.skip_issue(issue_key)

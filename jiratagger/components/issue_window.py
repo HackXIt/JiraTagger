@@ -106,12 +106,12 @@ class IssueWindowComponent(tk.Toplevel):
     def on_submit(self):
         tags = self.tags_list.get(0, tk.END)
         comment = self.comment_input.get("1.0", tk.END).strip()
-        self.app.state_manager.add_result(self.issue_key, tags, comment)
+        self.app.submit_issue(self.issue_key, tags, comment)
         self.destroy()
         self.app.process_next_issue()
 
     def on_skip(self):
-        self.app.state_manager.skip_issue(self.issue_key)
+        self.app.skip_issue(self.issue_key)
         self.destroy()
         self.app.process_next_issue()
 
