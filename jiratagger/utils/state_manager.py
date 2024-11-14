@@ -4,17 +4,19 @@ from datetime import datetime
 
 class StateManager:
     state_jira_url = "jira-url"
-    state_issue_keys = "issues-left"
+    state_issues_left = "issues-left"
     state_results = "issues-done"
     state_issues_skipped = "issues-skipped"
     state_tag_hints = "tag-hints"
-    def __init__(self, path, issue_keys, resume_file):
-        self.issue_keys = issue_keys or []
+    def __init__(self, path, issues_left, jira_url, resume_file):
+        self.jira_url = jira_url
+        self.issues_left = issues_left or []
         self.results = {}
         self.issues_skipped = []
         self.tag_hints = set()
-        self.current_index = 0
+        self.current_issue = None
         self.state_file = resume_file or os.path.join(path, 'jira_tagger_state.json')
+        self.results_file = os.path.join(path, 'jira_tagger_results.json')
 
         if resume_file:
             self.load_state()
@@ -22,12 +24,16 @@ class StateManager:
     def save_state(self):
         # Print timestamp and sanity message to console
         print(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Saving state to {self.state_file}")
-        # Do not remove issues that are currently processed on manual save
-        adjusted_index = self.current_index - 1 if self.issue_keys[self.current_index] not in self.results.keys() else self.current_index
+        # Do not remove issues that are currently being processed on manual save
+        if self.current_issue and self.current_issue not in self.results.keys() and self.current_issue not in self.issues_skipped:
+            print("Re-inserting current issue into issues left list")
+            self.issues_left.insert(0, self.current_issue)
+        sorted_issues_left = sorted(self.issues_left, key=lambda x: int(x.split('-')[1]), reverse=True)
+        sorted_results = dict(sorted(self.results.items(), key=lambda x: int(x[0].split('-')[1]), reverse=True))
         data = {
             self.state_jira_url: self.jira_url,
-            self.state_issue_keys: self.issue_keys[adjusted_index:],
-            self.state_results: self.results,
+            self.state_issues_left: sorted_issues_left,
+            self.state_results: sorted_results,
             self.state_issues_skipped: self.issues_skipped,
             self.state_tag_hints: list(self.tag_hints)
         }
@@ -38,35 +44,41 @@ class StateManager:
         with open(self.state_file, 'r') as file:
             data = json.load(file)
             self.jira_url = data[self.state_jira_url]
-            self.issue_keys = data[self.state_issue_keys]
+            self.issues_left = data[self.state_issues_left]
             self.results = data[self.state_results]
             self.issues_skipped = data[self.state_issues_skipped]
             self.tag_hints = set(data[self.state_tag_hints])
+        print(f"Loaded state from {self.state_file}: {len(self.issues_left)} issues left, {len(self.results)} issues done, {len(self.issues_skipped)} issues skipped")
 
     def export_results(self):
-        with open('jira_tagger_results.json', 'w') as file:
+        with open(self.results_file, 'w') as file:
             json.dump(self.results, file, indent=4)
 
     def get_next_issue(self):
-        if self.current_index >= len(self.issue_keys):
+        self.current_issue = self.issues_left.pop(0) if self.issues_left else None
+        if not self.current_issue:
+            print("All issues processed.")
             return None
-        issue_key = self.issue_keys[self.current_index]
-        self.current_index += 1
-        return issue_key
+        print(f"Processing issue {self.current_issue} ({self.remaining_issues_count()} left)")
+        return self.current_issue
 
     def add_result(self, issue_key, tags, comment):
         self.results[issue_key] = {"tags": list(tags), "comment": comment}
         self.tag_hints.update(tags)
+        self.issues_left.remove(issue_key)
         self.save_state()
 
-    def skip_issue(self, issue_key):
-        self.issues_skipped.append(issue_key)
+    def skip_issue(self):
+        print(f"Skipping issue {self.current_issue}")
+        self.issues_skipped.append(self.current_issue)
+        if self.current_issue in self.issues_left:
+            self.issues_left.remove(self.current_issue)
 
-    def get_remaining_issues_count(self):
-        return len(self.issue_keys) - self.current_index
+    def remaining_issues_count(self):
+        return len(self.issues_left)
     
-    def get_done_issues_count(self):
+    def done_issues_count(self):
         return len(self.results)
     
-    def get_skipped_issues_count(self):
+    def skipped_issues_count(self):
         return len(self.issues_skipped)

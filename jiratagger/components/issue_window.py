@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
+from urllib.parse import unquote
+import re
 from jiratagger.components.color_picker import ColorPickerComponent
 from jiratagger.components.link_popup import LinkPopupComponent
 from ttkwidgets.autocomplete import AutocompleteEntryListbox
@@ -15,17 +17,19 @@ class IssueWindowComponent(tk.Toplevel):
         "Ctrl+Shift+C: Insert color\n"
         "Ctrl+L: Insert link"
     )
-    def __init__(self, master, app, issue_key, winfo_rootx=None, winfo_rooty=None):
+    def __init__(self, master, app, winfo_rootx=None, winfo_rooty=None):
         super().__init__(master)
         self.app = app
-        self.issue_key = issue_key
-        self.title(f"Issue: {issue_key}")
+        self.issue_key = self.app.state_manager.current_issue
+        self.title(f"Issue: {self.issue_key}")
         self.wm_attributes("-topmost", True)
-        self.protocol("WM_DELETE_WINDOW", self.on_skip)
+        self.protocol("WM_DELETE_WINDOW", self.app.root.quit)
         self.window_width = 600
-        self.window_height = 800
+        self.window_height = 750
+
+        self.sorted_tags = sorted(self.app.state_manager.tag_hints, key=lambda tag: tag.split("-"))
         
-        self.tags_input = AutocompleteEntryListbox(master=self, completevalues=list(self.app.state_manager.tag_hints), allow_other_values=True)
+        self.tags_input = AutocompleteEntryListbox(master=self, completevalues=self.sorted_tags, allow_other_values=True)
         self.comment_input = tk.Text(self, height=10)
 
         # Position the window based on browser location
@@ -47,7 +51,7 @@ class IssueWindowComponent(tk.Toplevel):
         
         if browser_screen:
             x_position = browser_screen.x + browser_screen.width - self.window_width - 10
-            y_position = browser_screen.y + 130
+            y_position = browser_screen.y + 100
             print(f"Positioning on browser screen at: ({x_position}, {y_position})")
         else:
             # Default position if no browser screen is detected
@@ -82,6 +86,7 @@ class IssueWindowComponent(tk.Toplevel):
         self.comment_input.bind('<Control-u>', self.on_underline_shortcut)
         self.comment_input.bind('<Control-Shift-C>', self.on_color_shortcut)
         self.comment_input.bind('<Control-l>', self.on_link_shortcut)
+        self.comment_input.bind('<Control-v>', self.on_paste_shortcut)  
         self.tags_list.bind("<Delete>", self.on_delete_tag)
     
     def on_add_tag(self, event=None):
@@ -106,12 +111,12 @@ class IssueWindowComponent(tk.Toplevel):
     def on_submit(self):
         tags = self.tags_list.get(0, tk.END)
         comment = self.comment_input.get("1.0", tk.END).strip()
-        self.app.submit_issue(self.issue_key, tags, comment)
+        self.app.submit_issue(tags, comment)
         self.destroy()
         self.app.process_next_issue()
 
     def on_skip(self):
-        self.app.skip_issue(self.issue_key)
+        self.app.skip_issue()
         self.destroy()
         self.app.process_next_issue()
 
@@ -133,6 +138,30 @@ class IssueWindowComponent(tk.Toplevel):
 
     def on_link_shortcut(self, event):
         LinkPopupComponent(self, self.comment_input)
+        return 'break'
+    
+    def _clean_pasted_text(self, text):
+        # Decode any URL-encoded characters
+        text = unquote(text)
+        
+        # Decode Unicode escape sequences (e.g., \u00fcr)
+        text = bytes(text, "utf-8").decode("unicode_escape")
+        
+        # Remove non-printable characters
+        # text = re.sub(r'[\x00-\x1F\x7F]', '', text)
+        
+        return text
+    
+    def on_paste_shortcut(self, event):
+        try:
+            # Get text from the clipboard
+            clipboard_text = self.clipboard_get()
+            # Clean and reformat the pasted text
+            cleaned_text = self._clean_pasted_text(clipboard_text)
+            # Insert cleaned text at the current cursor position
+            self.comment_input.insert(tk.INSERT, cleaned_text)
+        except tk.TclError:
+            print("Failed to paste text.")
         return 'break'
 
     def show(self):
