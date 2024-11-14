@@ -37,3 +37,48 @@ So, in that regard, there are no features beyond that. The tool is very simple a
 - [x] Compare state file with list of issue-keys to determine missing issues in the state file.
 - [x] Paste UTF-8 encoded text into comment window and decode it for the view, to be able to copy-paste from previous comments in the state file.
 - [x] Statistics about the process (Issues left, issues skipped, issues done, Time Estimate for issue list based on current session performance (i.e. AVG of time-taken per issue in current session))
+
+## Practice
+
+I found it helps to use Notepad++ to have the `jira_tagger_state.json` open while editing. Notepad++ does not interfer (no file lockings or similar) and also automatically asks for a reload of the file if something changes.
+
+That way I can copy the comment text of previous issues and paste it in the comment field. The unicode encoding is automatically handled when done so.
+
+## How to run
+
+You need `poetry` to run this application and somewhat of a modern python version, since who knows what these dependencies require. 
+
+am using 3.12, so your mileage and success with the application may vary, if you use something different.
+
+Before you start, you need to clone the repository.
+
+First, install the virtual environment:
+```shell
+poetry install
+```
+
+Then activate the environment:
+(requires `venv` installation in project directory setting applied in `poetry`, otherwise you need to figure out the .venv path yourself or use a poetry command)
+```shell
+.venv/Scripts/activate # Linux
+.venv\Scripts\activate.ps1 # Windows
+# Optional to run without activating .venv
+poetry run ...
+```
+
+Afterwards, the application should be available:
+```shell
+(jiratagger-py3.12) > jiratagger -h
+usage: jiratagger [-h] [--resume JSON_FILE] [--compare CSV_FILE] [issue_keys_file] [jira_url]
+
+JiraTagger - Label Jira issues with tags and comments or compare saved state.
+
+positional arguments:
+  issue_keys_file     Path to the file containing Jira issue keys.
+  jira_url            Base URL of the Jira instance.
+
+options:
+  -h, --help          show this help message and exit
+  --resume JSON_FILE  Resume from a saved state file.
+  --compare CSV_FILE  Compare a saved state file with a CSV to find missing issues.
+```
