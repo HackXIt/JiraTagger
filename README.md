@@ -49,7 +49,9 @@ That way I can copy the comment text of previous issues and paste it in the comm
 
 You need `poetry` to run this application and somewhat of a modern python version, since who knows what these dependencies require. 
 
-am using 3.12, so your mileage and success with the application may vary, if you use something different.
+The application was used and interactively tested with `python 3.12`, so your mileage and success with the application may vary, if you use something different.
+
+I set the python restrictions to `>=3.8,<3.14`, so it should work for the most part, but compatibility or runtime issues might still exist with other python versions.
 
 Before you start, you need to clone the repository.
 
