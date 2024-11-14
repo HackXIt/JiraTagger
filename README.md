@@ -39,12 +39,6 @@ So, in that regard, there are no features beyond that. The tool is very simple a
 - [x] Statistics about the process (Issues left, issues skipped, issues done, Time Estimate for issue list based on current session performance (i.e. AVG of time-taken per issue in current session))
 - [x] Application and issue window will always stay on top, unless minimized. _(There's a lot of unnecessary details in the right side-bar of Jira, so that's where I decided to position the application)_
 
-## Practice
-
-I found it helps to use Notepad++ to have the `jira_tagger_state.json` open while editing. Notepad++ does not interfer (no file lockings or similar) and also automatically asks for a reload of the file if something changes.
-
-That way I can copy the comment text of previous issues and paste it in the comment field. The unicode encoding is automatically handled when done so.
-
 ## How to run
 
 You need `poetry` to run this application and somewhat of a modern python version, since who knows what these dependencies require. 
@@ -92,3 +86,25 @@ options:
 # Alternative
 poetry run jiratagger -h
 ```
+
+## Practice
+
+I found it helps to use Notepad++ to have the `jira_tagger_state.json` open while editing. Notepad++ does not interfer (no file lockings or similar) and also automatically asks for a reload of the file if something changes.
+
+That way I can copy the comment text of previous issues and paste it in the comment field. The unicode encoding is automatically handled when done so.
+
+If you edit the state file while using the application, your changes will be overwritten **without intervention.**
+
+To change the state file manually, just exit the application, make your changes, reload from the resume file. Python errors may arise if you write typos or syntax errors.
+
+This is useful to know, since if you later want to add a bunch of issues to the state file (i.e. `issues-left`), you can first compare against the list of issues and then copy/paste from the `missing_issues.json`.
+
+I am well aware that all of this could be in the application, but as already stated, this is such a one-off project that nobody probably cares.
+
+## Notes
+
+I tried creating this application as a browser extension as well but utterly failed at the attempt.
+
+All of this would be much nicer in a browser extension which adds a sidebar to browser window.
+
+I have never written a browser extension and I had no time to do so on the fly. I tried with ChatGPT and decided it was a failure _(garbage-in garbage-out)_, without me learning the ropes of what is necessary.
