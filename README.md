@@ -8,7 +8,7 @@ Most of the initial code was written by ChatGPT, I just made it work afterwards 
 
 **This code does not follow any best-practices, the goal was to make it work quickly. I tried to keep it somewhat organized, but this was done in quite a rush and might contain a few quirks.**
 
-The application assumes the Firefox Browser for proper positioning, but adding another Browser Calls to the utility would be easy, I just had no need to do it.
+The application assumes the Firefox Browser for proper positioning, but adding [another Browser Class](https://github.com/HackXIt/JiraTagger/blob/3f758ded4dde9329adf5a3f7e79869c8266e1f81/jiratagger/utils/browser_utils.py#L11) to the utility would be easy, I just had no need to do it.
 
 ## Context and Scope
 
