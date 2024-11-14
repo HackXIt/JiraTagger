@@ -12,7 +12,7 @@ class JiraTagger:
         self.issue_window = None
         self.root = tk.Tk()
         self.root.title("JiraTagger")
-        self.root.geometry("300x150")
+        self.root.geometry("400x150")
         self.root.withdraw()
         
         # Position variables
