@@ -41,7 +41,7 @@ So, in that regard, there are no features beyond that. The tool is very simple a
 
 ## How to run
 
-You need `poetry` to run this application and somewhat of a modern python version, since who knows what these dependencies require. 
+You need [`poetry`](https://python-poetry.org/docs/) to run this application and somewhat of a modern python version, since who knows what these dependencies require. 
 
 The application was used and interactively tested with `python 3.12`, so your mileage and success with the application may vary, if you use something different.
 
