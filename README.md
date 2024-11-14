@@ -4,9 +4,9 @@ An application to go through a list of issue keys and write information about th
 
 ![grafik](https://github.com/user-attachments/assets/298645fc-315d-4ba7-826d-6dc434829555)
 
-Most of the initial code was written by ChatGPT, I just made it work so that I can go on with my task.
+Most of the initial code was written by ChatGPT, I just made it work afterwards so that I can go on with my task.
 
-**This code does not follow any best-practices, the goal was to make it work quickly.**
+**This code does not follow any best-practices, the goal was to make it work quickly. I tried to keep it somewhat organized, but this was done in quite a rush and might contain a few quirks.**
 
 The application assumes the Firefox Browser for proper positioning, but adding another Browser Calls to the utility would be easy, I just had no need to do it.
 
@@ -53,7 +53,10 @@ The application was used and interactively tested with `python 3.12`, so your mi
 
 I set the python restrictions to `>=3.8,<3.14`, so it should work for the most part, but compatibility or runtime issues might still exist with other python versions.
 
-Before you start, you need to clone the repository.
+Before you start, you need to clone the repository. _Leave a star while you're at it, which lets me know someone uses this and might incentivize me to improve it._
+```shell
+git clone https://github.com/HackXIt/JiraTagger.git
+```
 
 First, install the virtual environment:
 ```shell
@@ -64,13 +67,14 @@ Then activate the environment:
 (requires `venv` installation in project directory setting applied in `poetry`, otherwise you need to figure out the .venv path yourself or use a poetry command)
 ```shell
 .venv/Scripts/activate # Linux
-.venv\Scripts\activate.ps1 # Windows
+.\.venv\Scripts\activate.ps1 # Windows
 # Optional to run without activating .venv
 poetry run ...
 ```
 
 Afterwards, the application should be available:
 ```shell
+# (...) indicates your shell has activated the .venv
 (jiratagger-py3.12) > jiratagger -h
 usage: jiratagger [-h] [--resume JSON_FILE] [--compare CSV_FILE] [issue_keys_file] [jira_url]
 
@@ -84,4 +88,7 @@ options:
   -h, --help          show this help message and exit
   --resume JSON_FILE  Resume from a saved state file.
   --compare CSV_FILE  Compare a saved state file with a CSV to find missing issues.
+
+# Alternative
+poetry run jiratagger -h
 ```
