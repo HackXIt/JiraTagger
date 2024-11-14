@@ -58,7 +58,8 @@ poetry install
 ```
 
 Then activate the environment:
-(requires `venv` installation in project directory setting applied in `poetry`, otherwise you need to figure out the .venv path yourself or use a poetry command)
+
+_(requires `venv` installation in project directory setting applied in `poetry`, otherwise you need to figure out the .venv path yourself or use a poetry command)_
 ```shell
 .venv/Scripts/activate # Linux
 .\.venv\Scripts\activate.ps1 # Windows
