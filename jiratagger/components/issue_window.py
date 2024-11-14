@@ -81,25 +81,20 @@ class IssueWindowComponent(tk.Toplevel):
     def _bind_shortcuts(self):
         self.tags_input.entry.bind("<Return>", self.on_add_tag)
         self.tags_input.entry.bind('<KeyRelease>', self.on_tag_key_release)
+        self.tags_input.listbox.bind("<Double-1>", self.on_tag_select)
+        self.tags_list.bind("<Double-1>", self.on_delete_tag)
+        self.tags_list.bind("<Delete>", self.on_delete_tag)
         self.comment_input.bind('<Control-b>', self.on_bold_shortcut)
         self.comment_input.bind('<Control-i>', self.on_italic_shortcut)
         self.comment_input.bind('<Control-u>', self.on_underline_shortcut)
         self.comment_input.bind('<Control-Shift-C>', self.on_color_shortcut)
         self.comment_input.bind('<Control-l>', self.on_link_shortcut)
         self.comment_input.bind('<Control-v>', self.on_paste_shortcut)  
-        self.tags_list.bind("<Delete>", self.on_delete_tag)
     
     def on_add_tag(self, event=None):
         tag = self.tags_input.entry.get().strip().strip(',')
         if tag and tag not in self.tags_list.get(0, tk.END):
             self.tags_list.insert(tk.END, tag)
-    
-    def on_delete_tag(self, event=None):
-        """Deletes the selected tag from the tags list and tag hints."""
-        selected_index = self.tags_list.curselection()
-        if selected_index:
-            tag = self.tags_list.get(selected_index)
-            self.tags_list.delete(selected_index)
 
     def on_tag_key_release(self, event):
         """Updates the auto-complete suggestion dynamically as the user types."""
@@ -107,6 +102,19 @@ class IssueWindowComponent(tk.Toplevel):
         if ',' in typed_text: # Add tag when user types a comma
             self.on_add_tag()
             self.tags_input.entry.delete(0, tk.END)
+
+    def on_tag_select(self, event):
+        """Handles the double-click event to add the selected tag to the tags list."""
+        selected_tag = self.tags_input.listbox.get(self.tags_input.listbox.curselection())
+        if selected_tag and selected_tag not in self.tags_list.get(0, tk.END):
+            self.tags_list.insert(tk.END, selected_tag)
+    
+    def on_delete_tag(self, event=None):
+        """Deletes the selected tag from the tags list and tag hints."""
+        selected_index = self.tags_list.curselection()
+        if selected_index:
+            tag = self.tags_list.get(selected_index)
+            self.tags_list.delete(selected_index)
 
     def on_submit(self):
         tags = self.tags_list.get(0, tk.END)
