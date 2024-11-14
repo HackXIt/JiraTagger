@@ -26,8 +26,8 @@ class StateManager:
         print(f"{datetime.now().strftime("%Y-%m-%d %H:%M:%S")} Saving state to {self.state_file}")
         # Do not remove issues that are currently being processed on manual save
         if self.current_issue and self.current_issue not in self.results.keys() and self.current_issue not in self.issues_skipped:
-            print("Re-inserting current issue into issues left list")
             self.issues_left.insert(0, self.current_issue)
+            print("(Re-inserted current issue into issues left list)")
         sorted_issues_left = sorted(self.issues_left, key=lambda x: int(x.split('-')[1]), reverse=True)
         sorted_results = dict(sorted(self.results.items(), key=lambda x: int(x[0].split('-')[1]), reverse=True))
         data = {
@@ -62,10 +62,9 @@ class StateManager:
         print(f"Processing issue {self.current_issue} ({self.remaining_issues_count()} left)")
         return self.current_issue
 
-    def add_result(self, issue_key, tags, comment):
-        self.results[issue_key] = {"tags": list(tags), "comment": comment}
+    def add_result(self, tags, comment):
+        self.results[self.current_issue] = {"tags": list(tags), "comment": comment}
         self.tag_hints.update(tags)
-        self.issues_left.remove(issue_key)
         self.save_state()
 
     def skip_issue(self):
