@@ -37,6 +37,7 @@ So, in that regard, there are no features beyond that. The tool is very simple a
 - [x] Compare state file with list of issue-keys to determine missing issues in the state file.
 - [x] Paste UTF-8 encoded text into comment window and decode it for the view, to be able to copy-paste from previous comments in the state file.
 - [x] Statistics about the process (Issues left, issues skipped, issues done, Time Estimate for issue list based on current session performance (i.e. AVG of time-taken per issue in current session))
+- [x] Application and issue window will always stay on top, unless minimized. _(There's a lot of unnecessary details in the right side-bar of Jira, so that's where I decided to position the application)_
 
 ## Practice
 
