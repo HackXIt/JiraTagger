@@ -79,6 +79,7 @@ def main():
     if args.compare:
         # Perform comparison and output missing issues
         compare_issues(args.resume, args.compare)
+        return
     elif args.resume:
         path = os.path.dirname(args.resume)
         # Resume processing using the saved state
