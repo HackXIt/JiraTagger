@@ -9,10 +9,11 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.14"
+python = ">=3.9,<3.14"
 ttkwidgets = "^0.13.0"
 screeninfo = "^0.8.1"
 pywin32 = "^308"
+pandas = "^2.2.3"
 
 [tool.poetry.scripts]
 jiratagger = "jiratagger.main:main"

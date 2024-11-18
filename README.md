@@ -45,7 +45,7 @@ You need [`poetry`](https://python-poetry.org/docs/) to run this application and
 
 The application was used and interactively tested with `python 3.12`, so your mileage and success with the application may vary, if you use something different.
 
-I set the python restrictions to `>=3.8,<3.14`, so it should work for the most part, but compatibility or runtime issues might still exist with other python versions.
+I set the python restrictions to `>=3.9,<3.14`, so it should work for the most part, but compatibility or runtime issues might still exist with other python versions.
 
 Before you start, you need to clone the repository. _Leave a star while you're at it, which lets me know someone uses this and might incentivize me to improve it._
 ```shell
